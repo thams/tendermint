@@ -55,8 +55,8 @@ $ echo $GOPATH
 We'll start by creating a new Go project.
 
 ```sh
-$ mkdir -p $GOPATH/src/github.com/me/kvstore
-$ cd $GOPATH/src/github.com/me/kvstore
+$ mkdir -p $GOPATH/src/github.com/me/example
+$ cd $GOPATH/src/github.com/me/example
 ```
 
 Inside the example directory create a `main.go` file with the following content:
