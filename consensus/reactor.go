@@ -452,7 +452,7 @@ func makeRoundStepMessage(rs *cstypes.RoundState) (nrsMsg *NewRoundStepMessage) 
 		Round:                 rs.Round,
 		Step:                  rs.Step,
 		SecondsSinceStartTime: int(time.Since(rs.StartTime).Seconds()),
-		LastCommitRound:       rs.LastCommit.Round(),
+		LastCommitRound:       rs.LastCommit.GetRound(),
 	}
 	return
 }
@@ -803,7 +803,7 @@ OUTER_LOOP:
 				commit := conR.conS.LoadCommit(prs.Height)
 				peer.TrySend(StateChannel, cdc.MustMarshalBinaryBare(&VoteSetMaj23Message{
 					Height:  prs.Height,
-					Round:   commit.Round(),
+					Round:   commit.Round,
 					Type:    types.PrecommitType,
 					BlockID: commit.BlockID,
 				}))
@@ -1051,7 +1051,7 @@ func (ps *PeerState) PickVoteToSend(votes types.VoteSetReader) (vote *types.Vote
 		return nil, false
 	}
 
-	height, round, type_, size := votes.Height(), votes.Round(), types.SignedMsgType(votes.Type()), votes.Size()
+	height, round, type_, size := votes.GetHeight(), votes.GetRound(), types.SignedMsgType(votes.Type()), votes.Size()
 
 	// Lazily set data using 'votes'.
 	if votes.IsCommit() {

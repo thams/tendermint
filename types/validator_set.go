@@ -601,8 +601,8 @@ func (vals *ValidatorSet) VerifyCommit(chainID string, blockID BlockID, height i
 	if vals.Size() != len(commit.Precommits) {
 		return NewErrInvalidCommitPrecommits(vals.Size(), len(commit.Precommits))
 	}
-	if height != commit.Height() {
-		return NewErrInvalidCommitHeight(height, commit.Height())
+	if height != commit.Height {
+		return NewErrInvalidCommitHeight(height, commit.Height)
 	}
 	if !blockID.Equals(commit.BlockID) {
 		return fmt.Errorf("Invalid commit -- wrong block id: want %v got %v",
@@ -622,7 +622,7 @@ func (vals *ValidatorSet) VerifyCommit(chainID string, blockID BlockID, height i
 			return fmt.Errorf("Invalid commit -- invalid signature: %v", precommit)
 		}
 		// Good precommit!
-		if blockID.Equals(precommit.BlockID) {
+		if blockID.Equals(precommit.BlockID(commit.BlockID)) {
 			talliedVotingPower += val.VotingPower
 		}
 		// else {
@@ -679,20 +679,10 @@ func (vals *ValidatorSet) VerifyFutureCommit(newSet *ValidatorSet, chainID strin
 	// Check old voting power.
 	oldVotingPower := int64(0)
 	seen := map[int]bool{}
-	round := commit.Round()
 
 	for idx, precommit := range commit.Precommits {
 		if precommit == nil {
 			continue
-		}
-		if precommit.Height != height {
-			return errors.Errorf("Blocks don't match - %d vs %d", round, precommit.Round)
-		}
-		if precommit.Round != round {
-			return errors.Errorf("Invalid commit -- wrong round: %v vs %v", round, precommit.Round)
-		}
-		if precommit.Type != PrecommitType {
-			return errors.Errorf("Invalid commit -- not precommit @ index %v", idx)
 		}
 		// See if this validator is in oldVals.
 		oldIdx, val := oldVals.GetByAddress(precommit.ValidatorAddress)
@@ -707,7 +697,7 @@ func (vals *ValidatorSet) VerifyFutureCommit(newSet *ValidatorSet, chainID strin
 			return errors.Errorf("Invalid commit -- invalid signature: %v", precommit)
 		}
 		// Good precommit!
-		if blockID.Equals(precommit.BlockID) {
+		if blockID.Equals(precommit.BlockID(commit.BlockID)) {
 			oldVotingPower += val.VotingPower
 		}
 		// else {

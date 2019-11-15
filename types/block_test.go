@@ -205,8 +205,8 @@ func TestCommit(t *testing.T) {
 	commit, err := MakeCommit(lastID, h-1, 1, voteSet, vals)
 	require.NoError(t, err)
 
-	assert.Equal(t, h-1, commit.Height())
-	assert.Equal(t, 1, commit.Round())
+	assert.Equal(t, h-1, commit.Height)
+	assert.Equal(t, 1, commit.Round)
 	assert.Equal(t, PrecommitType, SignedMsgType(commit.Type()))
 	if commit.Size() <= 0 {
 		t.Fatalf("commit %v has a zero or negative size: %d", commit, commit.Size())
@@ -228,9 +228,8 @@ func TestCommitValidateBasic(t *testing.T) {
 		{"Random Commit", func(com *Commit) {}, false},
 		{"Nil precommit", func(com *Commit) { com.Precommits[0] = nil }, false},
 		{"Incorrect signature", func(com *Commit) { com.Precommits[0].Signature = []byte{0} }, false},
-		{"Incorrect type", func(com *Commit) { com.Precommits[0].Type = PrevoteType }, true},
-		{"Incorrect height", func(com *Commit) { com.Precommits[0].Height = int64(100) }, true},
-		{"Incorrect round", func(com *Commit) { com.Precommits[0].Round = 100 }, true},
+		{"Incorrect height", func(com *Commit) { com.Height = int64(100) }, true},
+		{"Incorrect round", func(com *Commit) { com.Round = 100 }, true},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -508,7 +507,7 @@ func TestSignedHeaderValidateBasic(t *testing.T) {
 	h := Header{
 		Version:            version.Consensus{Block: math.MaxInt64, App: math.MaxInt64},
 		ChainID:            chainID,
-		Height:             commit.Height(),
+		Height:             commit.Height,
 		Time:               timestamp,
 		LastBlockID:        commit.BlockID,
 		LastCommitHash:     commit.Hash(),

@@ -30,7 +30,7 @@ func TestValidateBlockHeader(t *testing.T) {
 		mock.Mempool{},
 		sm.MockEvidencePool{},
 	)
-	lastCommit := types.NewCommit(types.BlockID{}, nil)
+	lastCommit := types.NewCommit(0, 0, types.BlockID{}, nil)
 
 	// some bad values
 	wrongHash := tmhash.Sum([]byte("this hash is wrong"))
@@ -100,8 +100,8 @@ func TestValidateBlockCommit(t *testing.T) {
 		mock.Mempool{},
 		sm.MockEvidencePool{},
 	)
-	lastCommit := types.NewCommit(types.BlockID{}, nil)
-	wrongPrecommitsCommit := types.NewCommit(types.BlockID{}, nil)
+	lastCommit := types.NewCommit(0, 0, types.BlockID{}, nil)
+	wrongPrecommitsCommit := types.NewCommit(1, 0, types.BlockID{}, nil)
 	badPrivVal := types.NewMockPV()
 
 	for height := int64(1); height < validationTestsStopHeight; height++ {
@@ -119,7 +119,7 @@ func TestValidateBlockCommit(t *testing.T) {
 				chainID,
 			)
 			require.NoError(t, err, "height %d", height)
-			wrongHeightCommit := types.NewCommit(state.LastBlockID, []*types.CommitSig{wrongHeightVote.CommitSig()})
+			wrongHeightCommit := types.NewCommit(wrongHeightVote.Height, wrongHeightVote.Round, state.LastBlockID, []*types.CommitSig{wrongHeightVote.CommitSig()})
 			block, _ := state.MakeBlock(height, makeTxs(height), wrongHeightCommit, nil, proposerAddr)
 			err = blockExec.ValidateBlock(state, block)
 			_, isErrInvalidCommitHeight := err.(types.ErrInvalidCommitHeight)
@@ -172,7 +172,7 @@ func TestValidateBlockCommit(t *testing.T) {
 		}
 		err = badPrivVal.SignVote(chainID, goodVote)
 		require.NoError(t, err, "height %d", height)
-		wrongPrecommitsCommit = types.NewCommit(blockID, []*types.CommitSig{goodVote.CommitSig(), badVote.CommitSig()})
+		wrongPrecommitsCommit = types.NewCommit(badVote.Height, badVote.Round, blockID, []*types.CommitSig{goodVote.CommitSig(), badVote.CommitSig()})
 	}
 }
 
@@ -189,7 +189,7 @@ func TestValidateBlockEvidence(t *testing.T) {
 		mock.Mempool{},
 		sm.MockEvidencePool{},
 	)
-	lastCommit := types.NewCommit(types.BlockID{}, nil)
+	lastCommit := types.NewCommit(0, 0, types.BlockID{}, nil)
 
 	for height := int64(1); height < validationTestsStopHeight; height++ {
 		proposerAddr := state.Validators.GetProposer().Address

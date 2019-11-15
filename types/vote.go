@@ -66,8 +66,27 @@ func (vote *Vote) CommitSig() *CommitSig {
 	if vote == nil {
 		return nil
 	}
-	cs := CommitSig(*vote)
-	return &cs
+
+	var blockIDFlag BlockIDFlag
+	switch {
+	case vote.BlockID.IsComplete():
+		blockIDFlag = BlockIDFlagCommit
+	case vote.BlockID.IsZero():
+		blockIDFlag = BlockIDFlagNil
+	// TODO: differentiate between empty and absent votes
+	// https://github.com/tendermint/tendermint/issues/3591
+	// case vote.IsAbsent():
+	// 	blockIDFlag = BlockIDFlagAbsent
+	default:
+		panic(fmt.Sprintf("Invalid vote %v - expected BlockID to be either empty or complete", vote))
+	}
+
+	return &CommitSig{
+		BlockIDFlag:      blockIDFlag,
+		ValidatorAddress: vote.ValidatorAddress,
+		Timestamp:        vote.Timestamp,
+		Signature:        vote.Signature,
+	}
 }
 
 func (vote *Vote) SignBytes(chainID string) []byte {
@@ -124,39 +143,39 @@ func (vote *Vote) Verify(chainID string, pubKey crypto.PubKey) error {
 // ValidateBasic performs basic validation.
 func (vote *Vote) ValidateBasic() error {
 	if !IsVoteTypeValid(vote.Type) {
-		return errors.New("Invalid Type")
+		return errors.New("invalid Type")
 	}
 	if vote.Height < 0 {
-		return errors.New("Negative Height")
+		return errors.New("negative Height")
 	}
 	if vote.Round < 0 {
-		return errors.New("Negative Round")
+		return errors.New("negative Round")
 	}
 
 	// NOTE: Timestamp validation is subtle and handled elsewhere.
 
 	if err := vote.BlockID.ValidateBasic(); err != nil {
-		return fmt.Errorf("Wrong BlockID: %v", err)
+		return fmt.Errorf("wrong BlockID: %v", err)
 	}
 	// BlockID.ValidateBasic would not err if we for instance have an empty hash but a
 	// non-empty PartsSetHeader:
 	if !vote.BlockID.IsZero() && !vote.BlockID.IsComplete() {
-		return fmt.Errorf("BlockID must be either empty or complete, got: %v", vote.BlockID)
+		return fmt.Errorf("blockID must be either empty or complete, got: %v", vote.BlockID)
 	}
 	if len(vote.ValidatorAddress) != crypto.AddressSize {
-		return fmt.Errorf("Expected ValidatorAddress size to be %d bytes, got %d bytes",
+		return fmt.Errorf("expected ValidatorAddress size to be %d bytes, got %d bytes",
 			crypto.AddressSize,
 			len(vote.ValidatorAddress),
 		)
 	}
 	if vote.ValidatorIndex < 0 {
-		return errors.New("Negative ValidatorIndex")
+		return errors.New("negative ValidatorIndex")
 	}
 	if len(vote.Signature) == 0 {
-		return errors.New("Signature is missing")
+		return errors.New("signature is missing")
 	}
 	if len(vote.Signature) > MaxSignatureSize {
-		return fmt.Errorf("Signature is too big (max: %d)", MaxSignatureSize)
+		return fmt.Errorf("signature is too big (max: %d)", MaxSignatureSize)
 	}
 	return nil
 }
