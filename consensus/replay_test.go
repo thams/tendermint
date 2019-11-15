@@ -891,9 +891,8 @@ func makeBlock(state sm.State, lastBlock *types.Block, lastBlockMeta *types.Bloc
 			state.Validators,
 			privVal,
 			lastBlock.Header.ChainID)
-		voteCommitSig := vote.CommitSig()
 		lastCommit = types.NewCommit(vote.Height, vote.Round,
-			lastBlockMeta.BlockID, []*types.CommitSig{voteCommitSig})
+			lastBlockMeta.BlockID, []*types.CommitSig{vote.CommitSig()})
 	}
 
 	return state.MakeBlock(height, []types.Tx{}, lastCommit, nil, state.Validators.GetProposer().Address)
@@ -989,8 +988,8 @@ func makeBlockchainFromWAL(wal WAL) ([]*types.Block, []*types.Commit, error) {
 			}
 		case *types.Vote:
 			if p.Type == types.PrecommitType {
-				commitSigs := []*types.CommitSig{p.CommitSig()}
-				thisBlockCommit = types.NewCommit(p.Height, p.Round, p.BlockID, commitSigs)
+				thisBlockCommit = types.NewCommit(p.Height, p.Round,
+					p.BlockID, []*types.CommitSig{p.CommitSig()})
 			}
 		}
 	}

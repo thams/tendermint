@@ -64,16 +64,14 @@ func TestBeginBlockValidators(t *testing.T) {
 
 	var (
 		now        = tmtime.Now()
-		commitSig0 = &types.CommitSig{
-			BlockIDFlag:      types.BlockIDFlagCommit,
-			ValidatorAddress: state.Validators.Validators[0].Address,
-			Timestamp:        now,
-			Signature:        []byte("Signature1")}
-		commitSig1 = &types.CommitSig{
-			BlockIDFlag:      types.BlockIDFlagCommit,
-			ValidatorAddress: state.Validators.Validators[1].Address,
-			Timestamp:        now,
-			Signature:        []byte("Signature2")}
+		commitSig0 = types.NewCommitSigCommit(
+			[]byte("Signature1"),
+			state.Validators.Validators[0].Address,
+			now)
+		commitSig1 = types.NewCommitSigCommit(
+			[]byte("Signature2"),
+			state.Validators.Validators[1].Address,
+			now)
 	)
 
 	testCases := []struct {
@@ -145,16 +143,14 @@ func TestBeginBlockByzantineValidators(t *testing.T) {
 	}
 
 	var (
-		commitSig0 = &types.CommitSig{
-			BlockIDFlag:      types.BlockIDFlagCommit,
-			ValidatorAddress: state.Validators.Validators[0].Address,
-			Timestamp:        now,
-			Signature:        []byte("Signature1")}
-		commitSig1 = &types.CommitSig{
-			BlockIDFlag:      types.BlockIDFlagCommit,
-			ValidatorAddress: state.Validators.Validators[1].Address,
-			Timestamp:        now,
-			Signature:        []byte("Signature2")}
+		commitSig0 = types.NewCommitSigCommit(
+			[]byte("Signature1"),
+			state.Validators.Validators[0].Address,
+			now)
+		commitSig1 = types.NewCommitSigCommit(
+			[]byte("Signature2"),
+			state.Validators.Validators[1].Address,
+			now)
 	)
 	commitSigs := []*types.CommitSig{commitSig0, commitSig1}
 	lastCommit := types.NewCommit(9, 0, prevBlockID, commitSigs)

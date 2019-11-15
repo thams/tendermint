@@ -456,6 +456,16 @@ type CommitSig struct {
 	Signature        []byte      `json:"signature"`
 }
 
+// NewCommitSigCommit returns new CommitSig with BlockIDFlagCommit.
+func NewCommitSigCommit(signature []byte, valAddr Address, ts time.Time) *CommitSig {
+	return &CommitSig{
+		BlockIDFlag:      BlockIDFlagCommit,
+		ValidatorAddress: valAddr,
+		Timestamp:        ts,
+		Signature:        signature,
+	}
+}
+
 func (cs *CommitSig) String() string {
 	if cs == nil {
 		return nilCommitSigStr
@@ -466,24 +476,6 @@ func (cs *CommitSig) String() string {
 		cmn.Fingerprint(cs.ValidatorAddress),
 		cs.BlockIDFlag,
 		CanonicalTime(cs.Timestamp))
-}
-
-// toVote converts the CommitSig to a Vote.
-func (cs *CommitSig) toVote(height int64, round int, blockID BlockID, vals *ValidatorSet) *Vote {
-	if cs == nil {
-		return nil
-	}
-	valIdx, _ := vals.GetByAddress(cs.ValidatorAddress)
-	return &Vote{
-		Type:             PrecommitType,
-		Height:           height,
-		Round:            round,
-		BlockID:          cs.BlockID(blockID),
-		Timestamp:        cs.Timestamp,
-		ValidatorAddress: cs.ValidatorAddress,
-		ValidatorIndex:   valIdx,
-		Signature:        cs.Signature,
-	}
 }
 
 // BlockID returns the Commit's BlockID if CommitSig indicates signing,
