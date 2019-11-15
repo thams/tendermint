@@ -54,19 +54,19 @@ func (b *Block) ValidateBasic() error {
 	defer b.mtx.Unlock()
 
 	if len(b.ChainID) > MaxChainIDLen {
-		return fmt.Errorf("ChainID is too long. Max is %d, got %d", MaxChainIDLen, len(b.ChainID))
+		return fmt.Errorf("chainID is too long. Max is %d, got %d", MaxChainIDLen, len(b.ChainID))
 	}
 
 	if b.Height < 0 {
-		return errors.New("Negative Header.Height")
+		return errors.New("negative Header.Height")
 	} else if b.Height == 0 {
-		return errors.New("Zero Header.Height")
+		return errors.New("zero Header.Height")
 	}
 
 	// NOTE: Timestamp validation is subtle and handled elsewhere.
 
 	if err := b.LastBlockID.ValidateBasic(); err != nil {
-		return fmt.Errorf("Wrong Header.LastBlockID: %v", err)
+		return fmt.Errorf("wrong Header.LastBlockID: %v", err)
 	}
 
 	// Validate the last commit and its hash.
@@ -75,14 +75,14 @@ func (b *Block) ValidateBasic() error {
 			return errors.New("nil LastCommit")
 		}
 		if err := b.LastCommit.ValidateBasic(); err != nil {
-			return fmt.Errorf("Wrong LastCommit")
+			return fmt.Errorf("wrong LastCommit: %v", err)
 		}
 	}
 	if err := ValidateHash(b.LastCommitHash); err != nil {
-		return fmt.Errorf("Wrong Header.LastCommitHash: %v", err)
+		return fmt.Errorf("wrong Header.LastCommitHash: %v", err)
 	}
 	if !bytes.Equal(b.LastCommitHash, b.LastCommit.Hash()) {
-		return fmt.Errorf("Wrong Header.LastCommitHash. Expected %v, got %v",
+		return fmt.Errorf("wrong Header.LastCommitHash. Expected %v, got %v",
 			b.LastCommit.Hash(),
 			b.LastCommitHash,
 		)
@@ -92,11 +92,11 @@ func (b *Block) ValidateBasic() error {
 	// NOTE: b.Data.Txs may be nil, but b.Data.Hash()
 	// still works fine
 	if err := ValidateHash(b.DataHash); err != nil {
-		return fmt.Errorf("Wrong Header.DataHash: %v", err)
+		return fmt.Errorf("wrong Header.DataHash: %v", err)
 	}
 	if !bytes.Equal(b.DataHash, b.Data.Hash()) {
 		return fmt.Errorf(
-			"Wrong Header.DataHash. Expected %v, got %v",
+			"wrong Header.DataHash. Expected %v, got %v",
 			b.Data.Hash(),
 			b.DataHash,
 		)
@@ -105,38 +105,38 @@ func (b *Block) ValidateBasic() error {
 	// Basic validation of hashes related to application data.
 	// Will validate fully against state in state#ValidateBlock.
 	if err := ValidateHash(b.ValidatorsHash); err != nil {
-		return fmt.Errorf("Wrong Header.ValidatorsHash: %v", err)
+		return fmt.Errorf("wrong Header.ValidatorsHash: %v", err)
 	}
 	if err := ValidateHash(b.NextValidatorsHash); err != nil {
-		return fmt.Errorf("Wrong Header.NextValidatorsHash: %v", err)
+		return fmt.Errorf("wrong Header.NextValidatorsHash: %v", err)
 	}
 	if err := ValidateHash(b.ConsensusHash); err != nil {
-		return fmt.Errorf("Wrong Header.ConsensusHash: %v", err)
+		return fmt.Errorf("wrong Header.ConsensusHash: %v", err)
 	}
 	// NOTE: AppHash is arbitrary length
 	if err := ValidateHash(b.LastResultsHash); err != nil {
-		return fmt.Errorf("Wrong Header.LastResultsHash: %v", err)
+		return fmt.Errorf("wrong Header.LastResultsHash: %v", err)
 	}
 
 	// Validate evidence and its hash.
 	if err := ValidateHash(b.EvidenceHash); err != nil {
-		return fmt.Errorf("Wrong Header.EvidenceHash: %v", err)
+		return fmt.Errorf("wrong Header.EvidenceHash: %v", err)
 	}
 	// NOTE: b.Evidence.Evidence may be nil, but we're just looping.
 	for i, ev := range b.Evidence.Evidence {
 		if err := ev.ValidateBasic(); err != nil {
-			return fmt.Errorf("Invalid evidence (#%d): %v", i, err)
+			return fmt.Errorf("invalid evidence (#%d): %v", i, err)
 		}
 	}
 	if !bytes.Equal(b.EvidenceHash, b.Evidence.Hash()) {
-		return fmt.Errorf("Wrong Header.EvidenceHash. Expected %v, got %v",
+		return fmt.Errorf("wrong Header.EvidenceHash. Expected %v, got %v",
 			b.EvidenceHash,
 			b.Evidence.Hash(),
 		)
 	}
 
 	if len(b.ProposerAddress) != crypto.AddressSize {
-		return fmt.Errorf("Expected len(Header.ProposerAddress) to be %d, got %d",
+		return fmt.Errorf("expected len(Header.ProposerAddress) to be %d, got %d",
 			crypto.AddressSize, len(b.ProposerAddress))
 	}
 
@@ -461,11 +461,11 @@ func (cs *CommitSig) String() string {
 		return nilCommitSigStr
 	}
 
-	return fmt.Sprintf("CommitSig{%X @ %s by %X on %T}",
+	return fmt.Sprintf("CommitSig{%X by %X on %v @ %s}",
 		cmn.Fingerprint(cs.Signature),
-		CanonicalTime(cs.Timestamp),
 		cmn.Fingerprint(cs.ValidatorAddress),
-		cs.BlockIDFlag)
+		cs.BlockIDFlag,
+		CanonicalTime(cs.Timestamp))
 }
 
 // toVote converts the CommitSig to a Vote.

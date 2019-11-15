@@ -62,9 +62,19 @@ func TestBeginBlockValidators(t *testing.T) {
 	prevParts := types.PartSetHeader{}
 	prevBlockID := types.BlockID{Hash: prevHash, PartsHeader: prevParts}
 
-	now := tmtime.Now()
-	commitSig0 := (&types.Vote{ValidatorIndex: 0, Timestamp: now, Type: types.PrecommitType}).CommitSig()
-	commitSig1 := (&types.Vote{ValidatorIndex: 1, Timestamp: now}).CommitSig()
+	var (
+		now        = tmtime.Now()
+		commitSig0 = &types.CommitSig{
+			BlockIDFlag:      types.BlockIDFlagCommit,
+			ValidatorAddress: state.Validators.Validators[0].Address,
+			Timestamp:        now,
+			Signature:        []byte("Signature1")}
+		commitSig1 = &types.CommitSig{
+			BlockIDFlag:      types.BlockIDFlagCommit,
+			ValidatorAddress: state.Validators.Validators[1].Address,
+			Timestamp:        now,
+			Signature:        []byte("Signature2")}
+	)
 
 	testCases := []struct {
 		desc                     string
@@ -134,8 +144,18 @@ func TestBeginBlockByzantineValidators(t *testing.T) {
 			types.TM2PB.Evidence(ev2, valSet, now)}},
 	}
 
-	commitSig0 := (&types.Vote{ValidatorIndex: 0, Timestamp: now, Type: types.PrecommitType}).CommitSig()
-	commitSig1 := (&types.Vote{ValidatorIndex: 1, Timestamp: now}).CommitSig()
+	var (
+		commitSig0 = &types.CommitSig{
+			BlockIDFlag:      types.BlockIDFlagCommit,
+			ValidatorAddress: state.Validators.Validators[0].Address,
+			Timestamp:        now,
+			Signature:        []byte("Signature1")}
+		commitSig1 = &types.CommitSig{
+			BlockIDFlag:      types.BlockIDFlagCommit,
+			ValidatorAddress: state.Validators.Validators[1].Address,
+			Timestamp:        now,
+			Signature:        []byte("Signature2")}
+	)
 	commitSigs := []*types.CommitSig{commitSig0, commitSig1}
 	lastCommit := types.NewCommit(9, 0, prevBlockID, commitSigs)
 	for _, tc := range testCases {

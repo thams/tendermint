@@ -35,9 +35,9 @@ func TestValidateBlockHeader(t *testing.T) {
 	// some bad values
 	wrongHash := tmhash.Sum([]byte("this hash is wrong"))
 	wrongVersion1 := state.Version.Consensus
-	wrongVersion1.Block += 1
+	wrongVersion1.Block++
 	wrongVersion2 := state.Version.Consensus
-	wrongVersion2.App += 1
+	wrongVersion2.App++
 
 	// Manipulation of any header field causes failure.
 	testCases := []struct {
@@ -131,10 +131,8 @@ func TestValidateBlockCommit(t *testing.T) {
 			block, _ = state.MakeBlock(height, makeTxs(height), wrongPrecommitsCommit, nil, proposerAddr)
 			err = blockExec.ValidateBlock(state, block)
 			_, isErrInvalidCommitPrecommits := err.(types.ErrInvalidCommitPrecommits)
-			require.True(
-				t,
-				isErrInvalidCommitPrecommits,
-				"expected ErrInvalidCommitPrecommits at height %d but got: %v",
+			require.True(t, isErrInvalidCommitPrecommits,
+				"expected ErrInvalidCommitPrecommits at height %d, but got: %v",
 				height,
 				err,
 			)
@@ -172,7 +170,11 @@ func TestValidateBlockCommit(t *testing.T) {
 		}
 		err = badPrivVal.SignVote(chainID, goodVote)
 		require.NoError(t, err, "height %d", height)
-		wrongPrecommitsCommit = types.NewCommit(badVote.Height, badVote.Round, blockID, []*types.CommitSig{goodVote.CommitSig(), badVote.CommitSig()})
+		err = badPrivVal.SignVote(chainID, badVote)
+		require.NoError(t, err, "height %d", height)
+
+		wrongPrecommitsCommit = types.NewCommit(goodVote.Height, goodVote.Round,
+			blockID, []*types.CommitSig{goodVote.CommitSig(), badVote.CommitSig()})
 	}
 }
 
